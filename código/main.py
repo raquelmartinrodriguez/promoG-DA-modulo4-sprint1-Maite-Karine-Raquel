@@ -1,9 +1,12 @@
 #%%
 from src import exploracion as exploracion
 import pandas as pd 
+from sklearn.impute import SimpleImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.impute import KNNImputer
 import matplotlib.pyplot as plt
 import seaborn as sns
-#%%
 
 ruta_continente = "../data/Coffee_Qlty_By_Continent.csv"
 ruta_país = "../data/Coffee_Qlty_By_Country.csv"
@@ -13,20 +16,35 @@ ruta_consumo = "../data/CoffeeConsumption.csv"
 df_quality_continent, df_quality_country = exploracion.cargar_dataframes(ruta_continente, ruta_país)
 df_quality, df_consumption = exploracion.cargar_dataframes(ruta_calidad, ruta_consumo)
 
-# %%
-df_quality_continent.head(5)
-# %%
-df_quality_country.head(5)
-# %%
-df_quality.head(5)
-# %%
-df_consumption.head(5)
-# %%
 # Configurar la visualización
 exploracion.configurar_visualizacion()
 
-# %%
-dataframes = [df_consumption, df_quality, df_quality_continent, df_quality_country]
 
+dataframes = [df_consumption, df_quality, df_quality_continent, df_quality_country]
 for df in dataframes: 
-    exploracion.exploracion_dataframe(df)
+    # Convertir el índice en una columna
+    df.reset_index(inplace=True, drop=False)
+
+
+exploracion.exploracion_dataframe(df_consumption,"country")
+
+exploracion.exploracion_dataframe(df_quality,"Species")
+ 
+exploracion.exploracion_dataframe(df_quality_continent,"Country.of.Origin")
+
+exploracion.exploracion_dataframe(df_quality_country,"Country.of.Origin")
+
+
+dataframes = [df_consumption, df_quality, df_quality_continent, df_quality_country]
+for df in dataframes: 
+    exploracion.transformar_nombres_columnas(df)
+
+new_name = {"country_of_origin":"continent_of_origin"}
+df_quality_continent.rename(columns=new_name, inplace=True)
+
+exploracion.imputar_valores_nulos(df_consumption, "percapitacons2016", estrategia='median')
+
+exploracion.imputar_nulos(df_consumption, "totcons2019")
+
+# %%
+

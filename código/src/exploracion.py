@@ -4,6 +4,9 @@
 import pandas as pd
 import numpy as np 
 from sklearn.impute import SimpleImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.impute import KNNImputer
 
 def cargar_dataframes(ruta_csv1, ruta_csv2):
     """Carga los dataframes desde archivos CSV.
@@ -41,7 +44,7 @@ def configurar_visualizacion():
     pd.set_option('display.float_format', '{:.2f}'.format)
 
 
-def exploracion_dataframe(dataframe, columna_control):
+def exploracion_dataframe(dataframe,columna_control):
     """Realiza un análisis exploratorio básico de un DataFrame.
 
     Args:
@@ -99,6 +102,13 @@ def imputar_valores_nulos(dataframe, columna, estrategia='median'):
     columna_imputada = imputer.fit_transform(dataframe[[columna]])
     dataframe[columna] = columna_imputada
 
+def imputar_nulos(dataframe, columna): 
+    imputer_iterative = IterativeImputer(max_iter=20, random_state=42)
+
+    # Ajustamos y transformamos los datos
+    imputer_iterative_imputado = imputer_iterative.fit_transform(dataframe[[columna]])  # Pasamos la columna como DataFrame
+    return dataframe
+
 def eliminar_columnas(dataframe, columnas):
     """Elimina columnas del DataFrame.
 
@@ -114,8 +124,10 @@ def transformar_nombres_columnas(dataframe):
     Args:
     - dataframe (DataFrame): El DataFrame cuyos nombres de columnas se transformarán.
     """
-    nuevas_columnas = [col.replace(" ", '_').lower() for col in dataframe.columns]
+    nuevas_columnas = [col.replace(".", '_').lower() for col in dataframe.columns]
     dataframe.columns = nuevas_columnas
+    
+    return dataframe
 
 def transformar_salary(valor):
     """Transforma el valor de la columna 'Salary'.
