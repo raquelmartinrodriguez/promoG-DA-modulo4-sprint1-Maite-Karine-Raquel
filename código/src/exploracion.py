@@ -1,6 +1,5 @@
-
 #%%
-# exploracion.py
+# Importación de módulos y funciones necesarias
 import pandas as pd
 import numpy as np 
 from sklearn.impute import SimpleImputer
@@ -12,42 +11,27 @@ def cargar_dataframes(ruta_csv1, ruta_csv2):
     """Carga los dataframes desde archivos CSV.
 
     Args:
-    - ruta_flight (str): La ruta al archivo CSV de Customer Flight Activity.
-    - ruta_loyalty (str): La ruta al archivo CSV de Customer Loyalty History.
+    - ruta_csv1 (str): La ruta al primer archivo CSV.
+    - ruta_csv2 (str): La ruta al segundo archivo CSV.
 
     Returns:
-    - df_flight (DataFrame): El dataframe cargado desde el archivo CSV de Customer Flight Activity.
-    - df_loyalty (DataFrame): El dataframe cargado desde el archivo CSV de Customer Loyalty History.
+    - df1 (DataFrame): El DataFrame cargado desde el primer archivo CSV.
+    - df2 (DataFrame): El DataFrame cargado desde el segundo archivo CSV.
     """
     df1= pd.read_csv(ruta_csv1, index_col=0)
     df2 = pd.read_csv(ruta_csv2, index_col=0)
     return df1, df2
-
-def combinar_dataframes(df1, df2):
-    """Combina los dataframes df_flight y df_loyalty utilizando la función merge.
-
-    Args:
-    - df_flight (DataFrame): El dataframe de Customer Flight Activity.
-    - df_loyalty (DataFrame): El dataframe de Customer Loyalty History.
-
-    Returns:
-    - df(DataFrame): El dataframe resultante de la combinación de df_flight y df_loyalty.
-    """
-    df_merge = pd.merge(df1, df2, left_index=True, right_index=True)
-    return df_merge
-
 
 def configurar_visualizacion():
     """Configura la visualización de pandas para mostrar todas las columnas y formato de los números."""
     pd.set_option('display.max_columns', None)
     pd.set_option('display.float_format', '{:.2f}'.format)
 
-
 def exploracion_dataframe(dataframe,columna_control):
     """Realiza un análisis exploratorio básico de un DataFrame.
 
     Args:
-    - df_merge(DataFrame): El DataFrame que se va a explorar.
+    - dataframe (DataFrame): El DataFrame que se va a explorar.
     - columna_control (str): El nombre de la columna que se utilizará como control para dividir el DataFrame.
     """
     print(f"Los duplicados que tenemos en el conjunto de datos son: {dataframe.duplicated().sum()}")
@@ -87,8 +71,18 @@ def exploracion_dataframe(dataframe,columna_control):
         
     return dataframe
 
+def transformar_nombres_columnas(dataframe):
+    """Transforma los nombres de las columnas del DataFrame.
 
-def imputar_valores_nulos(dataframe, columna, estrategia='median'):
+    Args:
+    - dataframe (DataFrame): El DataFrame cuyos nombres de columnas se transformarán.
+    """
+    nuevas_columnas = [col.replace(".", '_').lower() for col in dataframe.columns]
+    dataframe.columns = nuevas_columnas
+    
+    return dataframe
+
+def imputar_nulos_mediana(dataframe, columna, estrategia='median'):
     """Imputa valores nulos en una columna del DataFrame utilizando SimpleImputer.
 
     Args:
@@ -96,23 +90,17 @@ def imputar_valores_nulos(dataframe, columna, estrategia='median'):
     - columna (str): El nombre de la columna en la que se imputarán los valores nulos.
     - estrategia (str, optional): La estrategia a utilizar para la imputación. Por defecto es 'median'.
     """
-    
     imputer = SimpleImputer(strategy=estrategia)
     columna_imputada = imputer.fit_transform(dataframe[[columna]])
     dataframe[columna] = columna_imputada
 
 def imputar_nulos_moda(dataframe, columnas_moda):
-    """Imputa valores nulos en una columna del DataFrame utilizando SimpleImputer.
+    """Imputa valores nulos en una columna del DataFrame utilizando la moda.
 
     Args:
     - dataframe (DataFrame): El DataFrame en el que se imputarán los valores nulos.
-    - columna (str): El nombre de la columna en la que se imputarán los valores nulos.
-    - estrategia (str, optional): La estrategia a utilizar para la imputación. Por defecto es 'median'.
-    
-    Returns:
-    - dataframe (DataFrame): El DataFrame actualizado después de la imputación.
+    - columnas_moda (list): La lista de nombres de las columnas en las que se imputarán los valores nulos.
     """
-    # iteramos por la lista creada en el paso anterior:
     for columna in columnas_moda:
         
         # calculamos la moda para la columna por la que estamos iterando
@@ -128,35 +116,29 @@ def imputar_nulos_moda(dataframe, columnas_moda):
         
     return dataframe
 
-def imputar_nulos(dataframe, columna): 
+def imputar_nulos_iterative(dataframe, columna): 
+    """
+    Imputa valores nulos en una columna del DataFrame utilizando el Imputer Iterativo.
+
+    Args:
+    - dataframe (DataFrame): El DataFrame en el que se imputarán los valores nulos.
+    - columna (str): El nombre de la columna en la que se imputarán los valores nulos.
+
+    Returns:
+    - dataframe (DataFrame): El DataFrame actualizado después de la imputación.
+    """
+    # Crear un objeto Imputer Iterativo
     imputer_iterative = IterativeImputer(max_iter=20, random_state=42)
 
-    # Ajustamos y transformamos los datos
-    imputer_iterative_imputado = imputer_iterative.fit_transform(dataframe[[columna]])  # Pasamos la columna como DataFrame
+    # Ajustar y transformar los datos utilizando el Imputer Iterativo
+    dataframe[columna] = imputer_iterative.fit_transform(dataframe[[columna]])
+
+    # Retornar el DataFrame actualizado después de la imputación
     return dataframe
 
-def eliminar_columnas(dataframe, columnas):
-    """Elimina columnas del DataFrame.
-
-    Args:
-    - dataframe (DataFrame): El DataFrame del que se eliminarán las columnas.
-    - columnas (list): La lista de nombres de las columnas que se eliminarán.
-    """
-    dataframe.drop(columns=columnas, inplace=True)
-
-def transformar_nombres_columnas(dataframe):
-    """Transforma los nombres de las columnas del DataFrame.
-
-    Args:
-    - dataframe (DataFrame): El DataFrame cuyos nombres de columnas se transformarán.
-    """
-    nuevas_columnas = [col.replace(".", '_').lower() for col in dataframe.columns]
-    dataframe.columns = nuevas_columnas
-    
-    return dataframe
 
 def transformar_int(valor):
-    """Transforma el valor de la columna 'Salario'.
+    """Transforma el valor de la columna 'Salario' a entero.
 
     Args:
     - valor: El valor que se transformará.
@@ -171,28 +153,13 @@ def transformar_int(valor):
     else:
         return np.nan
 
-
-def analisis_frecuencia_cancelaciones(dataframe, columnas):
-    """Realiza un análisis de frecuencia de cancelaciones según meses y años.
-
-    Args:
-    - dataframe (DataFrame): El DataFrame en el que se realizará el análisis.
-    - columnas (list): La lista de nombres de las columnas a analizar.
-    """
-    for columnas_analizar in columnas:
-        for columna in columnas_analizar:
-            frecuencia_valores = dataframe[columna].value_counts()
-            print(f"La frecuencia de cancelaciones para la columna '{columna}' es:\n {frecuencia_valores}")
-
 def guardar_csv(dataframe1, dataframe2):
     """
-    Guarda un DataFrame en un archivo CSV.
+    Guarda dos DataFrames en archivos CSV.
 
     Args:
-    - dataframe: El DataFrame que se guardará en CSV.
-
-    Returns:
-    - None
+    - dataframe1 (DataFrame): El primer DataFrame que se guardará en CSV.
+    - dataframe2 (DataFrame): El segundo DataFrame que se guardará en CSV.
     """
     lista_df = [dataframe1, dataframe2]
     
