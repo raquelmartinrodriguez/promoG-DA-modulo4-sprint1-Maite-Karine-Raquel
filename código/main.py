@@ -46,5 +46,27 @@ exploracion.imputar_valores_nulos(df_consumption, "percapitacons2016", estrategi
 
 exploracion.imputar_nulos(df_consumption, "totcons2019")
 
+# Ahora, para eliminar la fila 1197
+df_quality.drop(1197, inplace=True)
+
+df_quality.head(10)
+
+lista_moda = ["variety", "color", "processing_method"]
+
+exploracion.imputar_nulos_moda(df_quality, lista_moda)
+
+exploracion.imputar_valores_nulos(df_quality, "harvest_year", estrategia='median')
+
+# Aplicar una transformación a la columna "harvest year"
+df_quality["harvest_year"] = df_quality["harvest_year"].apply(exploracion.transformar_int)
+
+
+exploracion.guardar_csv(df_consumption, df_quality)
+# %%
+
+ruta_df1 = "../data/calidad_cafe.csv"
+ruta_df2 = "../data/consumo_cafe.csv"
+
+df_calidad, df_consumo = exploracion.cargar_dataframes(ruta_df1, ruta_df2)
 # %%
 

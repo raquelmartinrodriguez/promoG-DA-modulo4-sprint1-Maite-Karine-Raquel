@@ -19,12 +19,11 @@ def cargar_dataframes(ruta_csv1, ruta_csv2):
     - df_flight (DataFrame): El dataframe cargado desde el archivo CSV de Customer Flight Activity.
     - df_loyalty (DataFrame): El dataframe cargado desde el archivo CSV de Customer Loyalty History.
     """
-    df_flight = pd.read_csv(ruta_csv1, index_col=0)
-    df_loyalty = pd.read_csv(ruta_csv2, index_col=0)
-    return df_flight, df_loyalty
+    df1= pd.read_csv(ruta_csv1, index_col=0)
+    df2 = pd.read_csv(ruta_csv2, index_col=0)
+    return df1, df2
 
-
-def combinar_dataframes(df_flight, df_loyalty):
+def combinar_dataframes(df1, df2):
     """Combina los dataframes df_flight y df_loyalty utilizando la función merge.
 
     Args:
@@ -34,7 +33,7 @@ def combinar_dataframes(df_flight, df_loyalty):
     Returns:
     - df(DataFrame): El dataframe resultante de la combinación de df_flight y df_loyalty.
     """
-    df_merge = pd.merge(df_flight, df_loyalty, left_index=True, right_index=True)
+    df_merge = pd.merge(df1, df2, left_index=True, right_index=True)
     return df_merge
 
 
@@ -102,6 +101,33 @@ def imputar_valores_nulos(dataframe, columna, estrategia='median'):
     columna_imputada = imputer.fit_transform(dataframe[[columna]])
     dataframe[columna] = columna_imputada
 
+def imputar_nulos_moda(dataframe, columnas_moda):
+    """Imputa valores nulos en una columna del DataFrame utilizando SimpleImputer.
+
+    Args:
+    - dataframe (DataFrame): El DataFrame en el que se imputarán los valores nulos.
+    - columna (str): El nombre de la columna en la que se imputarán los valores nulos.
+    - estrategia (str, optional): La estrategia a utilizar para la imputación. Por defecto es 'median'.
+    
+    Returns:
+    - dataframe (DataFrame): El DataFrame actualizado después de la imputación.
+    """
+    # iteramos por la lista creada en el paso anterior:
+    for columna in columnas_moda:
+        
+        # calculamos la moda para la columna por la que estamos iterando
+        moda = dataframe[columna].mode()[0]    
+        
+        # utilizando el método fillna reemplazamos los valores nulos por la moda calculada en el paso anterior. 
+        dataframe[columna] = dataframe[columna].fillna(moda)
+        
+    # por último chequeamos si se han eliminado los nulos en las columnas de "marital" y "loan"
+    print("Después del reemplazo usando 'fillna' quedan los siguientes nulos")
+
+    dataframe[columnas_moda].isnull().sum()
+        
+    return dataframe
+
 def imputar_nulos(dataframe, columna): 
     imputer_iterative = IterativeImputer(max_iter=20, random_state=42)
 
@@ -129,8 +155,8 @@ def transformar_nombres_columnas(dataframe):
     
     return dataframe
 
-def transformar_salary(valor):
-    """Transforma el valor de la columna 'Salary'.
+def transformar_int(valor):
+    """Transforma el valor de la columna 'Salario'.
 
     Args:
     - valor: El valor que se transformará.
@@ -138,14 +164,13 @@ def transformar_salary(valor):
     Returns:
     - int: El valor transformado.
     """
-    if valor != np.nan:
-    #if pd.notnull(valor):
-        valor = str(valor).replace('-', '')  # Elimina los guiones
+    if pd.notnull(valor):
+        valor = str(valor)
         valor = valor.split('.')[0]  # Obtiene la parte entera antes del punto
         return int(valor)
     else:
         return np.nan
-    
+
 
 def analisis_frecuencia_cancelaciones(dataframe, columnas):
     """Realiza un análisis de frecuencia de cancelaciones según meses y años.
@@ -158,5 +183,21 @@ def analisis_frecuencia_cancelaciones(dataframe, columnas):
         for columna in columnas_analizar:
             frecuencia_valores = dataframe[columna].value_counts()
             print(f"La frecuencia de cancelaciones para la columna '{columna}' es:\n {frecuencia_valores}")
+
+def guardar_csv(dataframe1, dataframe2):
+    """
+    Guarda un DataFrame en un archivo CSV.
+
+    Args:
+    - dataframe: El DataFrame que se guardará en CSV.
+
+    Returns:
+    - None
+    """
+    lista_df = [dataframe1, dataframe2]
+    
+    for df in lista_df: 
+        ruta_archivo = input("Inserte la ruta completa junto con el nombre del archivo CSV para guardar el DataFrame: ")
+        df.to_csv(ruta_archivo, index=False)  # Usamos index=False para evitar que se guarde el índice del DataFrame
 
 # %%
