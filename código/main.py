@@ -60,7 +60,7 @@ df_quality["harvest_year"] = df_quality["harvest_year"].apply(exploracion.transf
 
 # Guardado de DataFrames en archivos CSV
 exploracion.guardar_csv(df_consumption, df_quality)
-
+exploracion.guardar_csv(df_quality_continent, df_quality_country)
 # Carga de DataFrames desde archivos CSV para comprobar que estan los cambios aplicados a los CSV modificados 
 ruta_df1 = "../data/calidad_cafe.csv"
 ruta_df2 = "../data/consumo_cafe.csv"
